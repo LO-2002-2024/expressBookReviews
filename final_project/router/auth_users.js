@@ -18,7 +18,7 @@ const isValid = (username)=>{ //returns boolean
 
 const authenticatedUser = (username,password)=>{ //returns boolean
 //write code to check if username and password match the one we have in records.
-}
+} 
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
@@ -45,14 +45,46 @@ regd_users.post("/login", (req,res) => {
   };
 
   return res.status(200).json({ message: "User logged in successfully!", token: accessToken });
-  
+
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const isbn = req.params.isbn;
+  const review = req.query.review;
+
+  // Ensure user is authenticated
+  const username = req.session.authorization?.username;
+  if (!username) {
+    return res.status(401).json({ message: "User not logged in" });
+  }
+
+  // Check if book exists
+  const book = books[isbn];
+  if (!book) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  // Validate review
+  if (!review) {
+    return res.status(400).json({ message: "Review query parameter is required" });
+  }
+
+  // Add or update review
+  book.reviews[username] = review;
+
+  return res.status(200).json({ message: "Review added/updated successfully", reviews: book.reviews });
 });
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const book_to_delete = req.params.isbn;
+  if (book_to_delete) {
+    delete books[isbn];
+  }
+  res.send(`"${book_to_delete}" has been deleted`)
+});
+
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
