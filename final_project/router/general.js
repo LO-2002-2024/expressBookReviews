@@ -15,17 +15,17 @@ public_users.post("/register", (req,res) => {
   if (!username || !password) {
     return res.status(400).json({ message: "Username and password are required." });
   }
-  
-  // Check if user already exists
-  const existingUser = users.find(user => user.username === username);
-  if (existingUser) {
-    return res.status(409).json({ message: "Username already exists. Please choose another one." });
-  }
+
+  let valid = isValid(username)
 
   // Register new user
-  users.push({ username, password });
-
-  return res.status(201).json({ message: "User registered successfully!" });
+  if (valid) {
+    users.push({ username, password });
+    return res.status(201).json({ message: "User registered successfully!" });
+  }
+  else {
+    return res.status(409).json({ message: "Username already exists. Please choose another one." });
+  }
 
 });
 

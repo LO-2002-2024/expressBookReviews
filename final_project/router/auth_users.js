@@ -6,7 +6,14 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+  // Check if user already exists
+  const existingUser = users.find(user => user.username === username);
+  if (existingUser) {
+    return 0;
+  }
+  else {
+    return 1;
+  }
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
@@ -15,8 +22,30 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  
+  const { username, password } = req.body;
+  
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required." });
+  }
+  // Find matching user
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    return res.status(401).json({ message: "Invalid username or password." });
+  }
+
+  // Generate JWT
+  const accessToken = jwt.sign({ username }, "access", { expiresIn: "1h" });
+
+  // Store token in session
+  req.session.authorization = {
+    accessToken,
+    username
+  };
+
+  return res.status(200).json({ message: "User logged in successfully!", token: accessToken });
+  
 });
 
 // Add a book review
